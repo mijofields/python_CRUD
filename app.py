@@ -1,4 +1,5 @@
 from flask import Flask, render_template, url_for, redirect
+from flask_mysqldb import MySQL
 #import flask server
 #render_template is template engine
 #url_for url generator and load static files
