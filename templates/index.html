@@ -1,5 +1,49 @@
 {% extends 'base.html' %}
 
-{% block body %}
-<h1>Body Blocking</h1>
+
+{% block sub_content %}
+
+<div class="jumbotron jumbotron-fluid">
+    <div class="container">
+      <h1 class="display-3">The Python Blog</h1>
+      <p class="lead">Welcome to the Monty Python themed Blog coded in Python.
+                      And now for something completely different...</p>
+    </div>
+  </div>
+
+  {% for post in posts %}
+  <div role="tablist">
+    <div class="card">
+      <div class="card-header bg-primary text-white" role="tab">
+        <h5 class="mb-0">            
+            {{post.title}}          
+        </h5>
+      </div>
+  
+      <div>
+        <div class="card-body">
+            {{post.body}}
+        <div class="text-danger font-italic">
+            {{post.firstname}} {{post.lastname}}, {{post.date}}
+        </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  {% endfor %}
+
+
+  
+        <!-- {% if 'Mango' in fruits %}
+        <p>Mango exists in the list</p>
+        {% else %}
+        <p>Mango goes not exist in the list</p>
+        {% endif %}
+        {% block body %}
+        {% endblock %} -->
 {% endblock %}
+
+
+</body>
+</html>

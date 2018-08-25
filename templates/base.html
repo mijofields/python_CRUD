@@ -4,26 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.css"></script>
-    <title>My Python CRUD</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+<link rel="shortcut icon" href={{url_for('static', filename="python.ico")}} type="image/x-icon" border="0"/>
+    <title>The Python Blog</title>
 </head>
 <body>
 
+{% block navbar %}
+    {% include '_navbar.html' %}
+{% endblock %}
 
-    <h1>Python and Flask!</h1>
-    <img src={{url_for('static', filename="gary_mabbutt_200x300.jpg") }}/>
-    <br>
-        <!-- <ul>
-    {% for fruit in fruits %}
-        <li><h2>{{fruit}}</h2></li>
-    {% endfor %}
-        </ul>
-        {% if 'Mango' in fruits %}
-        <p>Mango exists in the list</p>
-        {% else %}
-        <p>Mango goes not exist in the list</p>
-        {% endif %} -->
-        {% block body %}
-        {% endblock %}
+{% block content %}
+    {% block sub_content %}
+    {% endblock %}
+{% endblock %}
+
 </body>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 </html>
