@@ -47,9 +47,10 @@ def index():
     #     return request.form['Password']
 
 #login page using hashed password allowing user session
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    return render_template('login.html')
+    redirect(url_for('index') + '#login_modal')
+    # return render_template('login.html')
 
 #once login complete allow author to edit posts or create new ones
 # @app.route('/posts')
