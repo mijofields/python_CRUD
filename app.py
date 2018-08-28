@@ -1,5 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, request, session
 from flask_mysqldb import MySQL
+from flask import json
 from flask_bootstrap import Bootstrap
 import yaml
 import os
@@ -47,9 +48,22 @@ def index():
     #     return request.form['Password']
 
 #login page using hashed password allowing user session
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['POST'])
 def login():
-    redirect(url_for('index') + '#login_modal')
+
+    form = request.form
+    username = form['username']
+    password = form['password']
+    loginObj = {"username": username, "password": password}
+    print(loginObj)
+    print(username)
+    print(password)
+
+    #some code here to check username password and return to homepage
+
+    return username
+
+    # redirect(url_for('index') + '#login_modal')
     # return render_template('login.html')
 
 #once login complete allow author to edit posts or create new ones
