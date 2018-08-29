@@ -59,17 +59,35 @@ def login():
     print(username)
     print(password)
 
+    cur = mysql.connection.cursor()
+    query_result = cur.execute("SELECT * FROM users WHERE username = %s", [username])
+    user_info = cur.fetchone()
+
+    if query_result and password == user_info['password']:
+        session['username'] = user_info['username']
+        session['userid'] = user_info['userid']
+        return redirect('/user/' + username )
+        
+    elif query_result and password != user_info['password']:
+        return str('wrong password you cunt, stop hacking')
+    else:
+        return str('you cunt, sign up')
+
+    # return render_template('index.html', posts=posts)
     #some code here to check username password and return to homepage
 
-    return username
+    # return username
 
     # redirect(url_for('index') + '#login_modal')
     # return render_template('login.html')
 
 #once login complete allow author to edit posts or create new ones
-# @app.route('/posts')
-# def login():
-#     return render_template('posts.html')
+@app.route('/user/<username>', methods=['GET', 'POST'])
+def homepage(username):
+    cur = mysql.connection.cursor()
+    query_result = cur.execute("SELECT * FROM posts WHERE author = %s", [session['userid']])
+    posts = cur.fetchall()
+    return render_template('home.html', posts=posts)
 
 @app.errorhandler(404)
 def page_not_found(e):
