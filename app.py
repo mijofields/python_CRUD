@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, request, session
 from flask_mysqldb import MySQL
-from flask import json
+from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
 import yaml
 import os

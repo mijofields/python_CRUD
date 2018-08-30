@@ -46,12 +46,15 @@ INSERT INTO posts (title, body, author) values ("You're all individuals!", "Jesu
 One minute I'm a leper with a trade, next minute my livelihood's gone. Not so much as a by-your-leave! 'You're cured, mate.' Bloody do-gooder.", 1);
 
 
-SELECT * FROM authors;
-SELECT * FROM books;
+SELECT * FROM users;
+SELECT * FROM posts;
 
 SELECT posts.title, posts.body, posts.date, posts.postid, users.firstname, users.lastname 
 FROM posts 
 LEFT JOIN users ON posts.author = users.userid;
+
+SELECT * FROM users WHERE username = %s, [username]
+
 
 -- show ALL books with authors
 -- INNER JOIN will only return all matching values from both tables
