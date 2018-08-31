@@ -1,10 +1,13 @@
-from flask import Flask, render_template, url_for, redirect, request, session
+from flask import Flask, render_template, url_for, redirect, request, session, flash, g
 from flask_mysqldb import MySQL
 from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
+from flask_login import LoginManager
+from functools import wraps
 import yaml
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
+
 
 #import flask server
 #render_template is template engine
@@ -14,14 +17,16 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 #instantiate the server
 Bootstrap(app)
+login = LoginManager(app)
+
 
 
 #configure sqldb
-db = yaml.load(open('db.yaml'))
-app.config['MYSQL_HOST'] = db['mysql_host']
-app.config['MYSQL_USER'] = db['mysql_user']
-app.config['MYSQL_PASSWORD'] = db['mysql_password']
-app.config['MYSQL_DB'] = db['mysql_db']
+env = yaml.load(open('db.yaml'))
+app.config['MYSQL_HOST'] = env['mysql_host']
+app.config['MYSQL_USER'] = env['mysql_user']
+app.config['MYSQL_PASSWORD'] = env['mysql_password']
+app.config['MYSQL_DB'] = env['mysql_db']
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 #allows table fields to be called like a dict
 app.config['SECRET_KEY'] = os.urandom(24)
@@ -32,7 +37,7 @@ mysql = MySQL(app)
 @app.route('/', methods= ['GET'])
 def index():
     cur = mysql.connection.cursor()
-    query_result = cur.execute("SELECT posts.title, posts.body, posts.date, posts.postid, users.firstname, users.lastname FROM posts LEFT JOIN users ON posts.author = users.userid;")
+    query_result = cur.execute("SELECT posts.title, posts.body, posts.date, users.firstname, users.lastname FROM posts LEFT JOIN users ON posts.userid = users.userid ORDER BY posts.date DESC")
     if query_result > 0:
         posts = cur.fetchall()
     return render_template('index.html', posts=posts)
@@ -54,10 +59,6 @@ def login():
     form = request.form
     username = form['username']
     password = form['password']
-    loginObj = {"username": username, "password": password}
-    print(loginObj)
-    print(username)
-    print(password)
 
     cur = mysql.connection.cursor()
     query_result = cur.execute("SELECT * FROM users WHERE username = %s", [username])
@@ -66,6 +67,8 @@ def login():
     if query_result and password == user_info['password']:
         session['username'] = user_info['username']
         session['userid'] = user_info['userid']
+        session['firstname'] = user_info['firstName']
+        session['login'] = True
         return redirect('/user/' + username )
         
     elif query_result and password != user_info['password']:
@@ -82,12 +85,35 @@ def login():
     # return render_template('login.html')
 
 #once login complete allow author to edit posts or create new ones
-@app.route('/user/<username>', methods=['GET', 'POST'])
+@app.route('/user/<username>', methods=['GET'])
+# @login_required
 def homepage(username):
     cur = mysql.connection.cursor()
-    query_result = cur.execute("SELECT * FROM posts WHERE author = %s", [session['userid']])
+    cur.execute("SELECT * FROM posts WHERE userid = %s ORDER BY date DESC", [session['userid']])
     posts = cur.fetchall()
     return render_template('home.html', posts=posts)
+
+@app.route('/user/<username>', methods=['POST'])
+# @login_required
+def addPost(username):
+
+    form = request.form
+    title = form['title']
+    body = form['body']
+    userid= session['userid']
+    cur = mysql.connection.cursor()
+    cur.execute("INSERT INTO posts (title, body, userid) VALUES (%s, %s, %s)", [title, body, userid]), 
+    mysql.connection.commit()
+    return redirect('/user/' + username )
+
+@app.route('/<username>', methods=['GET'])
+def userposts(username):
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT userid FROM users WHERE username = %s", [username])
+    userid = cur.fetchone()
+    cur.execute("SELECT posts.title, posts.body, posts.date, users.firstname, users.lastname FROM posts LEFT JOIN users ON posts.userid = users.userid WHERE users.userid = %s ORDER BY posts.date DESC", [userid['userid']])
+    posts = cur.fetchall()
+    return render_template('index.html', posts=posts)
 
 @app.errorhandler(404)
 def page_not_found(e):

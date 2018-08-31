@@ -6,15 +6,16 @@ $(document).ready(function() {
         event.preventDefault(); 
         $('#loginModal').modal('show');
        
-       
-        // $.ajax({
-        //     url: "/scrape",
-        //     method: "GET"
-        //   }).done(function(res) {
+    });
 
-        //     location.reload(true);
+    
 
-        //    });  
-    })
+});
 
+$(document).on("click", ".edit", function() {
+        
+    event.preventDefault(); 
+    console.log(`edit button`);
+    $('#editModal').modal('show');
+   
 });
