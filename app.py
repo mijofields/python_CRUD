@@ -1,8 +1,9 @@
 from flask import Flask, render_template, url_for, redirect, request, session, flash, g
 from flask_mysqldb import MySQL
-from flask_sqlalchemy import SQLAlchemy
+# from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
-from flask_login import LoginManager
+# from flask_login import LoginManager
+# from flask_login import UserMixin
 from functools import wraps
 import yaml
 import os
@@ -17,7 +18,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 #instantiate the server
 Bootstrap(app)
-login = LoginManager(app)
+# login = LoginManager(app)
 
 
 
@@ -30,11 +31,26 @@ app.config['MYSQL_DB'] = env['mysql_db']
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 #allows table fields to be called like a dict
 app.config['SECRET_KEY'] = os.urandom(24)
+
 #sets a random string which is a data key
 mysql = MySQL(app)
 
+
+#user class to facilitate log-in and registration
+
+def login_required(f):
+    @wraps(f)
+    def wrap (*args, **kwargs):
+        if 'logged_in' in session:
+            return f(*args, **kwargs)
+        else:
+            return redirect(url_for('index'))
+
+    return wrap
+
 # index page, showing all blog posts from all authors
 @app.route('/', methods= ['GET'])
+@app.route('/index', methods=['GET'])
 def index():
     cur = mysql.connection.cursor()
     query_result = cur.execute("SELECT posts.title, posts.body, posts.date, users.firstname, users.lastname FROM posts LEFT JOIN users ON posts.userid = users.userid ORDER BY posts.date DESC")
@@ -68,10 +84,12 @@ def login():
         session['username'] = user_info['username']
         session['userid'] = user_info['userid']
         session['firstname'] = user_info['firstName']
-        session['login'] = True
+        session['logged_in'] = True
+
         return redirect('/user/' + username )
         
     elif query_result and password != user_info['password']:
+
         return str('wrong password you cunt, stop hacking')
     else:
         return str('you cunt, sign up')
@@ -85,8 +103,19 @@ def login():
     # return render_template('login.html')
 
 #once login complete allow author to edit posts or create new ones
+
+@app.route('/delete/<postid>', methods=['POST'])
+@login_required
+def delete(postid):
+    print('delete is working')
+    cur = mysql.connection.cursor()
+    cur.execute("DELETE FROM posts WHERE postid = %s", [postid])
+    mysql.connection.commit()
+    return redirect('/user/' + session['username'] )
+    
+
 @app.route('/user/<username>', methods=['GET'])
-# @login_required
+@login_required
 def homepage(username):
     cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM posts WHERE userid = %s ORDER BY date DESC", [session['userid']])
@@ -94,7 +123,7 @@ def homepage(username):
     return render_template('home.html', posts=posts)
 
 @app.route('/user/<username>', methods=['POST'])
-# @login_required
+@login_required
 def addPost(username):
 
     form = request.form
@@ -114,6 +143,12 @@ def userposts(username):
     cur.execute("SELECT posts.title, posts.body, posts.date, users.firstname, users.lastname FROM posts LEFT JOIN users ON posts.userid = users.userid WHERE users.userid = %s ORDER BY posts.date DESC", [userid['userid']])
     posts = cur.fetchall()
     return render_template('index.html', posts=posts)
+
+@app.route('/logout')
+@login_required
+def logout():
+    session.clear() 
+    return redirect(url_for('index'))
 
 @app.errorhandler(404)
 def page_not_found(e):
