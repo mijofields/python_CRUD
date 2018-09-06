@@ -44,6 +44,7 @@ def login_required(f):
         if 'logged_in' in session:
             return f(*args, **kwargs)
         else:
+            flash('Please login to access your dashboard')
             return redirect(url_for('index'))
 
     return wrap
@@ -89,10 +90,13 @@ def login():
         return redirect('/user/' + username )
         
     elif query_result and password != user_info['password']:
+        flash('Incorrect login credentials')
+        return redirect(url_for('index'))
 
-        return str('wrong password you cunt, stop hacking')
     else:
-        return str('you cunt, sign up')
+        flash('Incorrect login credentials')
+        return redirect(url_for('index'))
+        
 
     # return render_template('index.html', posts=posts)
     #some code here to check username password and return to homepage

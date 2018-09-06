@@ -12,6 +12,16 @@
     </div>
   </div>
 
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div>
+    {% for message in messages %}
+      <h4 class="text-danger text-center">{{ message }}</h4>
+    {% endfor %}
+      </div>
+  {% endif %}
+{% endwith %}
+
   <div id="loginModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
