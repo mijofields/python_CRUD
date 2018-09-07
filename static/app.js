@@ -38,8 +38,7 @@ $(document).on("click", ".delete", function() {
 
     $.ajax({
         url: '/delete/' + postid,
-        method: "POST"
-      }).done(function(res) {
-        location.reload(true);          
-})
+        method: "POST",
+        success:function(response){ document.write(response)}
+      })
 });

@@ -96,9 +96,8 @@ def delete(postid):
     cur.execute("DELETE FROM posts WHERE postid = %s", [postid])
     mysql.connection.commit()
     cur.close()
-    flash('You have deleted your post')
+    flash('You have deleted a post')
     return render_template('home.html' )
-    # return redirect('/user/' + session['username'] )
   
 @app.route('/edit/<postid>', methods=['GET','POST'])
 @login_required
