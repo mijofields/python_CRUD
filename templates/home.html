@@ -39,11 +39,22 @@
 <div class="container-fluid">
     <h3 class="text-center">There are some that call me ... {{session['firstname']}}.</h3>
     <br><br>
+    
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+  <div>
+  {% for message in messages %}
+    <h4 class="text-danger text-center">{{ message }}</h4>
+  {% endfor %}
+    </div>
+{% endif %}
+{% endwith %}
+
     <div class="row">      
-      <div class="col-5 offset-1">
-            <h2>Your Posts:</h2>
+      <div class="col-5 offset-1 mb-1">
+            <h2>You have {{count}} posts, Ni!</h2>
         {% for post in posts %}
-  <div role="tablist">
+  <div role="tablist mb-2">
     <div class="card">
       <div class="card-header bg-primary text-white" role="tab">
         <h5 class="mb-0" id={{post.postid}}title>            
@@ -60,7 +71,7 @@
         <button type="button" class="btn btn-warning edit" data-id={{post.postid}} data-title={{post.title}} data-body={{post.body}}>Edit</button>
         <button type="button" class="btn btn-danger delete" data-id={{post.postid}}>Delete</button>
         </div>
-        
+    
       </div>
     </div>
 
@@ -69,7 +80,7 @@
       </div>
       {% endif %}
       <div class="col-5">
-        <h2>Create a new post:</h2>
+        <h2>Create a ni post:</h2>
 
         <form role="form" action="/user/{{session['username']}}" method="POST">
                 <div class="form-group">

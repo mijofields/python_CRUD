@@ -9,20 +9,28 @@
     <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
       <ul class="navbar-nav mr-auto mt-2 mt-md-0">
         <li class="nav-item active">
-          <a class="nav-link" href="/">Posts<span class="sr-only">(current)</span></a>
+          <a class="nav-link" href="/">All Posts<span class="sr-only">(current)</span></a>
         </li>
-        <li class="nav-item">
+        
           {% if session['logged_in'] %}
+          <li class="nav-item">
+          <a class="nav-link" id="dashboard" href="/user/{{session['username']}}">Dashboard</a>
+          </li>
+          {% endif %}
+          {% if session['logged_in'] %}
+          <li class="nav-item">
           <a class="nav-link" id="logout" href="/logout">Logout</a>
+          </li>
           {% endif %}
           {% if not session['logged_in'] %}
+          <li class="nav-item">
           <a class="nav-link" id="login" href="#">Login</a>
+          </li>
           {% endif %}
-        </li>
-        <form class="form-inline">
+        <!-- <form class="form-inline">
           <input class="form-control mr-sm-2" type="text" placeholder="Search">
           <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-        </form>
+        </form> -->
     
       </ul>
     </div>

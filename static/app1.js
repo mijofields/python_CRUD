@@ -17,22 +17,16 @@ $(document).ready(function() {
 $(document).on("click", ".edit", function() {
         
     event.preventDefault();
-
+    let postid = $(this).data('id');
     console.log(`edit button working`);
 
-    console.log($(this).data('id'));
-    
-    let _id = $(this).data('id');
-    let title = $(this).data('title');
-    let body = $(this).data('body');
-
-    console.log(`title: ${title}`);
-    console.log(`body: ${body}`);
-
-    $('#editModaltitle').text(title);
-    $('#editModalbody').text(body);
-
-    $('#editModal').modal('show');
+    $.ajax({
+        url: '/edit/' + postid,
+        method: "GET"
+      }).done(function(response) {
+          
+        // location.reload(true);
+})
 
    
 });
@@ -40,8 +34,6 @@ $(document).on("click", ".edit", function() {
 $(document).on("click", ".delete", function() {
         
     event.preventDefault();
-
-    console.log(`delete button IS NOT working`);
     
     let postid = $(this).data('id');
     console.log(`postid app2:  ${postid}`);

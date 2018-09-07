@@ -44,12 +44,12 @@ def login_required(f):
         if 'logged_in' in session:
             return f(*args, **kwargs)
         else:
-            flash('Please login to access your dashboard')
+            flash('Please logni to access your dashboard')
             return redirect(url_for('index'))
 
     return wrap
 
-# index page, showing all blog posts from all authors
+# root & index page, showing all blog posts from all authors
 @app.route('/', methods= ['GET'])
 @app.route('/index', methods=['GET'])
 def index():
@@ -57,17 +57,9 @@ def index():
     query_result = cur.execute("SELECT posts.title, posts.body, posts.date, users.firstname, users.lastname FROM posts LEFT JOIN users ON posts.userid = users.userid ORDER BY posts.date DESC")
     if query_result > 0:
         posts = cur.fetchall()
+    cur.close()
     return render_template('index.html', posts=posts)
     
-    # return url_for('index')
-    # session['username'] = employees[0]['name']
-
-    # cur.execute("INSERT INTO user VALUES (%s)", ['Bains'])
-    # mysql.connection.commit()
-
-    # if request.method =='POST':
-    #     # return 'Succesfully Registered'
-    #     return request.form['Password']
 
 #login page using hashed password allowing user session
 @app.route('/login', methods=['POST'])
@@ -97,26 +89,27 @@ def login():
         flash('Incorrect login credentials')
         return redirect(url_for('index'))
         
-
-    # return render_template('index.html', posts=posts)
-    #some code here to check username password and return to homepage
-
-    # return username
-
-    # redirect(url_for('index') + '#login_modal')
-    # return render_template('login.html')
-
-#once login complete allow author to edit posts or create new ones
-
 @app.route('/delete/<postid>', methods=['POST'])
 @login_required
 def delete(postid):
-    print('delete is working')
     cur = mysql.connection.cursor()
     cur.execute("DELETE FROM posts WHERE postid = %s", [postid])
     mysql.connection.commit()
-    return redirect('/user/' + session['username'] )
-    
+    cur.close()
+    flash('You have deleted your post')
+    return render_template('home.html' )
+    # return redirect('/user/' + session['username'] )
+  
+@app.route('/edit/<postid>', methods=['GET','POST'])
+@login_required
+def editpost(postid):
+    print('edit working')
+    cur = mysql.connection.cursor()
+    query = cur.execute("SELECT * FROM posts WHERE postid = %s", [postid])
+    post = cur.fetchone()
+    print(post['title'])
+    cur.close()
+    return render_template('edit_post.html', post=post)
 
 @app.route('/user/<username>', methods=['GET'])
 @login_required
@@ -124,7 +117,9 @@ def homepage(username):
     cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM posts WHERE userid = %s ORDER BY date DESC", [session['userid']])
     posts = cur.fetchall()
-    return render_template('home.html', posts=posts)
+    cur.close()
+    count = len(posts)
+    return render_template('home.html', posts=posts, count=count)
 
 @app.route('/user/<username>', methods=['POST'])
 @login_required
@@ -137,6 +132,8 @@ def addPost(username):
     cur = mysql.connection.cursor()
     cur.execute("INSERT INTO posts (title, body, userid) VALUES (%s, %s, %s)", [title, body, userid]), 
     mysql.connection.commit()
+    cur.close()
+    flash('You have added a post')
     return redirect('/user/' + username )
 
 @app.route('/<username>', methods=['GET'])
@@ -146,12 +143,14 @@ def userposts(username):
     userid = cur.fetchone()
     cur.execute("SELECT posts.title, posts.body, posts.date, users.firstname, users.lastname FROM posts LEFT JOIN users ON posts.userid = users.userid WHERE users.userid = %s ORDER BY posts.date DESC", [userid['userid']])
     posts = cur.fetchall()
+    cur.close()
     return render_template('index.html', posts=posts)
 
 @app.route('/logout')
 @login_required
 def logout():
     session.clear() 
+    flash('Thanks for visiting')
     return redirect(url_for('index'))
 
 @app.errorhandler(404)
