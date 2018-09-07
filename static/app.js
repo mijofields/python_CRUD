@@ -21,12 +21,10 @@ $(document).ready(function() {
 
         $.ajax({
             url: '/edit/' + postid,
-            method: "GET"
-          }).done(function(response) {
-              
-            location.reload(true);
-    })
-    
+            method: "GET",
+            success:function(response){ document.write(response)}
+          })
+    //success returns control to Flask, allowing for the route to work
        
     });
 

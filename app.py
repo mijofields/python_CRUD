@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, redirect, request, session, flash, g
+from flask import Flask, render_template, url_for, redirect, request, session, flash, g, jsonify
 from flask_mysqldb import MySQL
 # from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
@@ -103,13 +103,17 @@ def delete(postid):
 @app.route('/edit/<postid>', methods=['GET','POST'])
 @login_required
 def editpost(postid):
+    
     print('edit working')
     cur = mysql.connection.cursor()
-    query = cur.execute("SELECT * FROM posts WHERE postid = %s", [postid])
+    cur.execute("SELECT * FROM posts WHERE postid = %s", [postid])
     post = cur.fetchone()
     print(post['title'])
     cur.close()
     return render_template('edit_post.html', post=post)
+    # return jsonify({'data': render_template('edit_post.html', post=post)})
+    
+
 
 @app.route('/user/<username>', methods=['GET'])
 @login_required
@@ -120,6 +124,7 @@ def homepage(username):
     cur.close()
     count = len(posts)
     return render_template('home.html', posts=posts, count=count)
+
 
 @app.route('/user/<username>', methods=['POST'])
 @login_required
@@ -136,6 +141,7 @@ def addPost(username):
     flash('You have added a post')
     return redirect('/user/' + username )
 
+
 @app.route('/<username>', methods=['GET'])
 def userposts(username):
     cur = mysql.connection.cursor()
@@ -146,12 +152,14 @@ def userposts(username):
     cur.close()
     return render_template('index.html', posts=posts)
 
+
 @app.route('/logout')
 @login_required
 def logout():
     session.clear() 
     flash('Thanks for visiting')
     return redirect(url_for('index'))
+
 
 @app.errorhandler(404)
 def page_not_found(e):

@@ -25,7 +25,7 @@ $(document).on("click", ".edit", function() {
         method: "GET"
       }).done(function(response) {
           
-        // location.reload(true);
+        console.log(response);
 })
 
    
