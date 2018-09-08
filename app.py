@@ -59,6 +59,27 @@ def index():
         posts = cur.fetchall()
     cur.close()
     return render_template('index.html', posts=posts)
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+
+    if request.method == 'GET':
+        return render_template('register.html')
+
+    else:
+        form = request.form
+        firstname = form['firstname']
+        lastname = form['lastname']
+        username = form['username']
+        email = form['email']
+        password = form['password']
+        cur = mysql.connection.cursor()
+        cur.execute("INSERT INTO users (firstname, lastname, username, email, password) VALUES (%s, %s, %s, %s, %s)", [firstname, lastname, username, email, password])
+        mysql.connection.commit()
+        cur.close()
+        flash('You are registered, you can now login!')
+        return redirect(url_for('index'))
+
     
 
 #login page using hashed password allowing user session
@@ -102,16 +123,26 @@ def delete(postid):
 @app.route('/edit/<postid>', methods=['GET','POST'])
 @login_required
 def editpost(postid):
-    
-    print('edit working')
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM posts WHERE postid = %s", [postid])
-    post = cur.fetchone()
-    print(post['title'])
-    cur.close()
-    return render_template('edit_post.html', post=post)
-    # return jsonify({'data': render_template('edit_post.html', post=post)})
-    
+
+    if request.method == 'POST':
+        form = request.form
+        newtitle = form['newtitle']
+        newbody = form['newbody']
+        cur = mysql.connection.cursor()
+        cur.execute("UPDATE posts SET title=%s, body=%s WHERE postid=%s", [newtitle, newbody, postid])
+        mysql.connection.commit()
+        cur.close()
+        flash('You have updated a post')
+        return redirect('/user/' + session['username'] )
+
+    else:
+        print('edit working')
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM posts WHERE postid = %s", [postid])
+        post = cur.fetchone()
+        print(post['title'])
+        cur.close()
+        return render_template('edit_post.html', post=post)
 
 
 @app.route('/user/<username>', methods=['GET'])

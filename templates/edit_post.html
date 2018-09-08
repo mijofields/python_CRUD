@@ -3,8 +3,31 @@
 
 {% block sub_content %}
 
-  <h1>{{post.title}}</h1>
-  <h2>{{post.body}}</h2>
 
 
+<div class="container-fluid">
+  <div class="row">
+  <div class="col-4 offset-4">
+      <h4 class="text-center">Edit your post</h4>
+  <div class="d-flex justify-content-center">
+ 
+  <form role="form" action="/edit/{{post.postid}}" method="POST">
+    <div>
+  <h3>Title:</h3>
+  <textarea rows="2" cols="50" name="newtitle" maxlength="100">
+    {{post.title}} 
+  </textarea>
+
+  <h3>Body:</h3>
+  <textarea rows="5" cols="50" name="newbody" maxlength="1000">
+    {{post.body}} 
+  </textarea>
+</div>
+  <button type="submit" class="btn btn-primary mb-2">Submit</button>
+</form>
+</div>
+
+</div>
+  </div>
+</div>
 {% endblock %}
