@@ -7,7 +7,8 @@ CREATE TABLE users(
   firstName VARCHAR(25) NOT NULL,
   lastName VARCHAR(25) NOT NULL,
   email VARCHAR(100) UNIQUE NOT NULL,
-  password CHAR(100) NOT NULL,
+  passwordHash CHAR(100) NOT NULL,
+  passwordActual CHAR(100) NOT NULL,
   username VARCHAR(50) UNIQUE NOT NULL ,
   PRIMARY KEY (userid)
 );

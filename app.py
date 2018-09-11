@@ -56,8 +56,11 @@ def index():
     query_result = cur.execute("SELECT posts.title, posts.body, posts.date, users.firstname, users.lastname FROM posts LEFT JOIN users ON posts.userid = users.userid ORDER BY posts.date DESC")
     if query_result > 0:
         posts = cur.fetchall()
-    cur.close()
-    return render_template('index.html', posts=posts)
+        cur.close()
+        return render_template('index.html', posts=posts)
+    else:
+        return render_template('index.html')
+    
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -71,12 +74,13 @@ def register():
         lastname = form['lastname']
         username = form['username']
         email = form['email']
-        password = form['password']
+        passwordActual = form['password']
+        passwordHash = generate_password_hash(form['password'])
         cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO users (firstname, lastname, username, email, password) VALUES (%s, %s, %s, %s, %s)", [firstname, lastname, username, email, password])
+        cur.execute("INSERT INTO users (firstname, lastname, username, email, passwordActual, passwordHash) VALUES (%s, %s, %s, %s, %s, %s)", [firstname, lastname, username, email, passwordActual, passwordHash])
         mysql.connection.commit()
         cur.close()
-        flash('You are registered, you can now log-ni!')
+        flash('You are registered, you can now log-ni using your credentials!')
         return redirect(url_for('index'))
 
     
@@ -93,15 +97,15 @@ def login():
     query_result = cur.execute("SELECT * FROM users WHERE username = %s", [username])
     user_info = cur.fetchone()
 
-    if query_result and password == user_info['password']:
+    if query_result and check_password_hash(user_info['passwordHash'], password):
         session['username'] = user_info['username']
         session['userid'] = user_info['userid']
-        session['firstname'] = user_info['firstName']
+        session['firstname'] = user_info['firstname']
         session['logged_in'] = True
 
         return redirect('/user/' + username )
         
-    elif query_result and password != user_info['password']:
+    elif query_result and not check_password_hash(user_info['passwordHash'], password):
         flash('Incorrect login credentials')
         return redirect(url_for('index'))
 
