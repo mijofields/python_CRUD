@@ -5,7 +5,7 @@
 
 
 
-{% if posts%}
+
 
 
 <div class="container-fluid">
@@ -22,6 +22,7 @@
 {% endif %}
 {% endwith %}
 
+{% if posts %}
     <div class="row">      
       <div class="col-5 offset-1 mb-1">
             <h2>You have {{count}} posts, Ni!</h2>
@@ -51,17 +52,49 @@
   {% endfor %}
       </div>
       {% endif %}
+      
+
+      {% if not posts %}
+      <div class="row">      
+        
+        <div class="col-5 offset-1 mb-1">
+              <h2>You have ni posts</h2>
+    <div role="tablist mb-2">
+      <div class="card">
+        <div class="card-header bg-primary text-white" role="tab">
+          <h5 class="mb-0">            
+              You should make a post         
+          </h5>
+        </div>
+    
+        <div>
+          <div class="card-body">
+              What have the Romans ever done for us?
+       
+          </div>
+      
+        </div>
+      </div>
+    </div>
+    </div>
+
+      {% endif %}
+
       <div class="col-5">
         <h2>Create a ni post:</h2>
 
         <form role="form" action="/user/{{session['username']}}" method="POST">
                 <div class="form-group">
-                  <label for="formGroupExampleInput">Title</label>
-                  <input type="text" class="form-control" id="postInput" name="title" placeholder="Title" required>
+                  <!-- <label for="formGroupExampleInput">Title</label> -->
+                  <h4>Title:</h4>
+                  <textarea rows="2" cols="50" name="title" maxlength="100" placeholder="Less than 100 characters..."></textarea>
+                  <!-- <input type="text" class="form-control" id="postInput" name="title" placeholder="Title" required> -->
                 </div>
                 <div class="form-group">
-                  <label for="formGroupExampleInput2">Body</label>
-                  <input type="text" class="form-control" id="postBody" name="body" rows="5" placeholder="Body" required>
+                  <!-- <label for="formGroupExampleInput2">Body</label> -->
+                  <h4>Body:</h4>
+                  <textarea rows="5" cols="50" name="body" maxlength="1000" placeholder="Less than 1000 characters..."></textarea>
+                  <!-- <input type="text" class="form-control" id="postBody" name="body" rows="5" placeholder="Body" required> -->
                 </div>
                     <button type="submit" class="btn btn-primary mb-2" method="POST">Submit</button>
                 </form>

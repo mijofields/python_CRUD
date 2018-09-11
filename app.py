@@ -1,6 +1,5 @@
 from flask import Flask, render_template, url_for, redirect, request, session, flash, g, jsonify
 from flask_mysqldb import MySQL
-# from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
 # from flask_login import LoginManager
 # from flask_login import UserMixin
@@ -44,7 +43,7 @@ def login_required(f):
         if 'logged_in' in session:
             return f(*args, **kwargs)
         else:
-            flash('Please logni to access your dashboard')
+            flash('Please log-ni to access your dashboard')
             return redirect(url_for('index'))
 
     return wrap
@@ -77,7 +76,7 @@ def register():
         cur.execute("INSERT INTO users (firstname, lastname, username, email, password) VALUES (%s, %s, %s, %s, %s)", [firstname, lastname, username, email, password])
         mysql.connection.commit()
         cur.close()
-        flash('You are registered, you can now login!')
+        flash('You are registered, you can now log-ni!')
         return redirect(url_for('index'))
 
     
