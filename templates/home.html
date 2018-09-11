@@ -85,16 +85,15 @@
 
         <form role="form" action="/user/{{session['username']}}" method="POST">
                 <div class="form-group">
-                  <!-- <label for="formGroupExampleInput">Title</label> -->
+               
                   <h4>Title:</h4>
-                  <textarea rows="2" cols="50" name="title" maxlength="100" placeholder="Less than 100 characters..."></textarea>
-                  <!-- <input type="text" class="form-control" id="postInput" name="title" placeholder="Title" required> -->
+                  <textarea rows="2" cols="50" name="title" maxlength="100" placeholder="Less than 100 characters..." required></textarea>
+         
                 </div>
                 <div class="form-group">
-                  <!-- <label for="formGroupExampleInput2">Body</label> -->
+               
                   <h4>Body:</h4>
-                  <textarea rows="5" cols="50" name="body" maxlength="1000" placeholder="Less than 1000 characters..."></textarea>
-                  <!-- <input type="text" class="form-control" id="postBody" name="body" rows="5" placeholder="Body" required> -->
+                  <textarea rows="5" cols="50" name="body" maxlength="1000" placeholder="Less than 1000 characters..." required></textarea>
                 </div>
                     <button type="submit" class="btn btn-primary mb-2" method="POST">Submit</button>
                 </form>

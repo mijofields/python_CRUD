@@ -59,6 +59,7 @@ def index():
         cur.close()
         return render_template('index.html', posts=posts)
     else:
+        flash('There have been no posts, yet.')
         return render_template('index.html')
     
 
@@ -68,7 +69,7 @@ def register():
     if request.method == 'GET':
         return render_template('register.html')
 
-    else:
+    elif request.method == 'POST':
         form = request.form
         firstname = form['firstname']
         lastname = form['lastname']
@@ -83,7 +84,9 @@ def register():
         flash('You are registered, you can now log-ni using your credentials!')
         return redirect(url_for('index'))
 
-    
+    else:
+        flash('This http verb is not currently supported')
+        return redirect(url_for('index'))
 
 #login page using hashed password allowing user session
 @app.route('/login', methods=['POST'])
@@ -148,31 +151,47 @@ def editpost(postid):
         return render_template('edit_post.html', post=post)
 
 
-@app.route('/user/<username>', methods=['GET'])
+@app.route('/user/<username>', methods=['GET', 'POST'])
 @login_required
 def homepage(username):
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM posts WHERE userid = %s ORDER BY date DESC", [session['userid']])
-    posts = cur.fetchall()
-    cur.close()
-    count = len(posts)
-    return render_template('home.html', posts=posts, count=count)
 
+    if request.method == 'GET':
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM posts WHERE userid = %s ORDER BY date DESC", [session['userid']])
+        posts = cur.fetchall()
+        cur.close()
+        count = len(posts)
+        return render_template('home.html', posts=posts, count=count)
 
-@app.route('/user/<username>', methods=['POST'])
-@login_required
-def addPost(username):
+    elif request.method == 'POST':
+        form = request.form
+        title = form['title']
+        body = form['body']
+        cur = mysql.connection.cursor()
+        cur.execute("INSERT INTO posts (title, body, userid) VALUES (%s, %s, %s)", [title, body, session['userid']]), 
+        mysql.connection.commit()
+        cur.close()
+        flash('You have added a post')
+        return redirect('/user/' + username )
 
-    form = request.form
-    title = form['title']
-    body = form['body']
-    userid= session['userid']
-    cur = mysql.connection.cursor()
-    cur.execute("INSERT INTO posts (title, body, userid) VALUES (%s, %s, %s)", [title, body, userid]), 
-    mysql.connection.commit()
-    cur.close()
-    flash('You have added a post')
-    return redirect('/user/' + username )
+    else: 
+        flash('This http verb request is not currently supported')
+        return redirect('/user/' + username )
+
+# @app.route('/user/<username>', methods=['POST'])
+# @login_required
+# def addPost(username):
+
+#     form = request.form
+#     title = form['title']
+#     body = form['body']
+#     userid= session['userid']
+#     cur = mysql.connection.cursor()
+#     cur.execute("INSERT INTO posts (title, body, userid) VALUES (%s, %s, %s)", [title, body, userid]), 
+#     mysql.connection.commit()
+#     cur.close()
+#     flash('You have added a post')
+#     return redirect('/user/' + username )
 
 
 @app.route('/<username>', methods=['GET'])
@@ -197,7 +216,7 @@ def logout():
 @app.errorhandler(404)
 def page_not_found(e):
     #e is the error message
-    return 'This page was not found you numpty'
+    return '404: This page was not found.'
 
 
 
