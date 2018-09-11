@@ -1,12 +1,12 @@
 from flask import Flask, render_template, url_for, redirect, request, session, flash, g, jsonify
 from flask_mysqldb import MySQL
 from flask_bootstrap import Bootstrap
-# from flask_login import LoginManager
-# from flask_login import UserMixin
 from functools import wraps
 import yaml
 import os
+import sys
 from werkzeug.security import generate_password_hash, check_password_hash
+from wtforms import Form, BooleanField, StringField, PasswordField, TextAreaField, validators
 
 
 #import flask server
@@ -30,13 +30,24 @@ app.config['MYSQL_DB'] = env['mysql_db']
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 #allows table fields to be called like a dict
 app.config['SECRET_KEY'] = os.urandom(24)
-
 #sets a random string which is a data key
+
 mysql = MySQL(app)
 
+#data validation classes:
 
-#user class to facilitate log-in and registration
+class RegisterForm(Form):
+    firstname = StringField('Firstname', [validators.Length(min=1, max=25)])
+    lastname = StringField('Lastname', [validators.Length(min=1, max=25)])
+    username = StringField('Username', [validators.Length(min=1, max=50)])
+    email = StringField('Email', [validators.Length(min=6, max=100)])
+    password = PasswordField('Password', [validators.Length(min=4, max=10)])
 
+class ArticleForm(Form):
+    title = StringField('Title', [validators.Length(min=1, max=100)])
+    body = TextAreaField('Body', [validators.Length(min=30, max=1000)])
+
+#login required decorator
 def login_required(f):
     @wraps(f)
     def wrap (*args, **kwargs):
@@ -65,12 +76,12 @@ def index():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    form = RegisterForm(request.form)
 
     if request.method == 'GET':
         return render_template('register.html')
 
-    elif request.method == 'POST':
-        form = request.form
+    elif request.method == 'POST' and form.validate():
         firstname = form['firstname']
         lastname = form['lastname']
         username = form['username']
@@ -85,7 +96,7 @@ def register():
         return redirect(url_for('index'))
 
     else:
-        flash('This http verb is not currently supported')
+        flash('Something went wrong with your registration, please try again.\n fistname < 50 characters. \n lastname < 50 characters. \n username < 50 characters. \n email > 4 and < 100 characters. \n password > 4 and < 10 characters.')
         return redirect(url_for('index'))
 
 #login page using hashed password allowing user session
@@ -105,7 +116,7 @@ def login():
         session['userid'] = user_info['userid']
         session['firstname'] = user_info['firstname']
         session['logged_in'] = True
-
+        flash('Welcome back ' + session['firstname'] + '.')
         return redirect('/user/' + username )
         
     elif query_result and not check_password_hash(user_info['passwordHash'], password):
@@ -130,8 +141,9 @@ def delete(postid):
 @login_required
 def editpost(postid):
 
-    if request.method == 'POST':
-        form = request.form
+    form = ArticleForm(request.form)
+
+    if request.method == 'POST' and form.validate():
         newtitle = form['newtitle']
         newbody = form['newbody']
         cur = mysql.connection.cursor()
@@ -141,8 +153,11 @@ def editpost(postid):
         flash('You have updated a post')
         return redirect('/user/' + session['username'] )
 
+    elif request.method == 'POST' and not form.validate():
+        flash('Something went wrong with your post. Please keep title to less than 100 characters and body to less than 1000 characters.')
+        return redirect('/user/' + session['username'] )
+
     else:
-        print('edit working')
         cur = mysql.connection.cursor()
         cur.execute("SELECT * FROM posts WHERE postid = %s", [postid])
         post = cur.fetchone()
@@ -154,6 +169,7 @@ def editpost(postid):
 @app.route('/user/<username>', methods=['GET', 'POST'])
 @login_required
 def homepage(username):
+    form = ArticleForm(request.form)
 
     if request.method == 'GET':
         cur = mysql.connection.cursor()
@@ -163,8 +179,7 @@ def homepage(username):
         count = len(posts)
         return render_template('home.html', posts=posts, count=count)
 
-    elif request.method == 'POST':
-        form = request.form
+    elif request.method == 'POST' and form.validate():
         title = form['title']
         body = form['body']
         cur = mysql.connection.cursor()
@@ -174,35 +189,29 @@ def homepage(username):
         flash('You have added a post')
         return redirect('/user/' + username )
 
+    elif request.method == 'POST' and not form.validate():
+        flash('Please make sure the title is less than 100 characters and the body less than 1000 characters.')
+        return redirect('/user/' + username )
+
     else: 
         flash('This http verb request is not currently supported')
         return redirect('/user/' + username )
 
-# @app.route('/user/<username>', methods=['POST'])
-# @login_required
-# def addPost(username):
-
-#     form = request.form
-#     title = form['title']
-#     body = form['body']
-#     userid= session['userid']
-#     cur = mysql.connection.cursor()
-#     cur.execute("INSERT INTO posts (title, body, userid) VALUES (%s, %s, %s)", [title, body, userid]), 
-#     mysql.connection.commit()
-#     cur.close()
-#     flash('You have added a post')
-#     return redirect('/user/' + username )
 
 
 @app.route('/<username>', methods=['GET'])
 def userposts(username):
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT userid FROM users WHERE username = %s", [username])
-    userid = cur.fetchone()
-    cur.execute("SELECT posts.title, posts.body, posts.date, users.firstname, users.lastname FROM posts LEFT JOIN users ON posts.userid = users.userid WHERE users.userid = %s ORDER BY posts.date DESC", [userid['userid']])
-    posts = cur.fetchall()
-    cur.close()
-    return render_template('index.html', posts=posts)
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT userid FROM users WHERE username = %s", [username])
+        userid = cur.fetchone()
+        cur.execute("SELECT posts.title, posts.body, posts.date, users.firstname, users.lastname FROM posts LEFT JOIN users ON posts.userid = users.userid WHERE users.userid = %s ORDER BY posts.date DESC", [userid['userid']])
+        posts = cur.fetchall()
+        cur.close()
+        return render_template('index.html', posts=posts)
+    except:
+        flash('This username does not exist, sorry.')
+        return render_template('index.html')
 
 
 @app.route('/logout')
