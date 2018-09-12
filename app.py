@@ -59,21 +59,7 @@ def login_required(f):
 
     return wrap
 
-# root & index page, showing all blog posts from all authors
-@app.route('/', methods= ['GET'])
-@app.route('/index', methods=['GET'])
-def index():
-    cur = mysql.connection.cursor()
-    query_result = cur.execute("SELECT posts.title, posts.body, posts.date, users.firstname, users.lastname FROM posts LEFT JOIN users ON posts.userid = users.userid ORDER BY posts.date DESC")
-    if query_result > 0:
-        posts = cur.fetchall()
-        cur.close()
-        return render_template('index.html', posts=posts)
-    else:
-        flash('There have been no posts, yet.')
-        return render_template('index.html')
-    
-
+#log in & registration
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm(request.form)
@@ -99,7 +85,7 @@ def register():
         flash('Something went wrong with your registration, please try again.\n fistname < 50 characters. \n lastname < 50 characters. \n username < 50 characters. \n email > 4 and < 100 characters. \n password > 4 and < 10 characters.')
         return redirect(url_for('index'))
 
-#login page using hashed password allowing user session
+#login page using hashed password and session
 @app.route('/login', methods=['POST'])
 def login():
 
@@ -126,48 +112,22 @@ def login():
     else:
         flash('Incorrect login credentials')
         return redirect(url_for('index'))
-        
-@app.route('/delete/<postid>', methods=['POST'])
-@login_required
-def delete(postid):
+
+#READ: root & index page, showing all blog posts from all authors 
+@app.route('/', methods= ['GET'])
+@app.route('/index', methods=['GET'])
+def index():
     cur = mysql.connection.cursor()
-    cur.execute("DELETE FROM posts WHERE postid = %s", [postid])
-    mysql.connection.commit()
-    cur.close()
-    flash('You have deleted a post')
-    return redirect('/user/' + session['username'] )
-  
-@app.route('/edit/<postid>', methods=['GET','POST'])
-@login_required
-def editpost(postid):
-
-    form = ArticleForm(request.form)
-
-    if request.method == 'POST' and form.validate():
-        title = form.title.data.strip()
-        body = form.body.data.strip()
-        cur = mysql.connection.cursor()
-        cur.execute("UPDATE posts SET title=%s, body=%s WHERE postid=%s", [title, body, postid])
-        mysql.connection.commit()
+    query_result = cur.execute("SELECT posts.title, posts.body, posts.date, users.firstname, users.lastname FROM posts LEFT JOIN users ON posts.userid = users.userid ORDER BY posts.date DESC")
+    if query_result > 0:
+        posts = cur.fetchall()
         cur.close()
-        flash('You have updated a post')
-        return redirect('/user/' + session['username'] )
-
-    elif request.method == 'POST' and not form.validate():
-        flash('Something went wrong with your post. Please keep title to less than 100 characters and body to less than 1000 characters.')
-        return redirect('/user/' + session['username'] )
-
-    elif request.method == 'GET':
-        cur = mysql.connection.cursor()
-        cur.execute("SELECT * FROM posts WHERE postid = %s", [postid])
-        post = cur.fetchone()
-        cur.close()
-        return render_template('edit_post.html', post=post)
-
+        return render_template('index.html', posts=posts)
     else:
-        flash('That was an invalid request')
-        return redirect('/user/' + session['username'] )
+        flash('There have been no posts, yet.')
+        return render_template('index.html')
 
+#Read and Create dashboard methods
 @app.route('/user/<username>', methods=['GET', 'POST'])
 @login_required
 def homepage(username):
@@ -199,8 +159,8 @@ def homepage(username):
         flash('This http verb request is not currently supported')
         return redirect('/user/' + username )
 
-
-
+    
+#READ: username search
 @app.route('/<username>', methods=['GET'])
 def userposts(username):
     try:
@@ -216,7 +176,50 @@ def userposts(username):
         flash('The username ' + username + ' does not exist, sorry.')
         return render_template('index.html')
 
+#DELETE: remove a post        
+@app.route('/delete/<postid>', methods=['POST'])
+@login_required
+def delete(postid):
+    cur = mysql.connection.cursor()
+    cur.execute("DELETE FROM posts WHERE postid = %s", [postid])
+    mysql.connection.commit()
+    cur.close()
+    flash('You have deleted a post')
+    return redirect('/user/' + session['username'] )
 
+#UPDATE: edit a post
+@app.route('/edit/<postid>', methods=['GET','POST'])
+@login_required
+def editpost(postid):
+
+    form = ArticleForm(request.form)
+
+    if request.method == 'POST' and form.validate():
+        title = form.title.data.strip()
+        body = form.body.data.strip()
+        cur = mysql.connection.cursor()
+        cur.execute("UPDATE posts SET title=%s, body=%s WHERE postid=%s", [title, body, postid])
+        mysql.connection.commit()
+        cur.close()
+        flash('You have updated a post')
+        return redirect('/user/' + session['username'] )
+
+    elif request.method == 'POST' and not form.validate():
+        flash('Something went wrong with your post. Please keep title to less than 100 characters and body to less than 1000 characters.')
+        return redirect('/user/' + session['username'] )
+
+    elif request.method == 'GET':
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM posts WHERE postid = %s", [postid])
+        post = cur.fetchone()
+        cur.close()
+        return render_template('edit_post.html', post=post)
+
+    else:
+        flash('That was an invalid request')
+        return redirect('/user/' + session['username'] )
+
+#logout
 @app.route('/logout')
 @login_required
 def logout():
@@ -224,7 +227,7 @@ def logout():
     flash('Thanks for visiting')
     return redirect(url_for('index'))
 
-
+#error catch all
 @app.errorhandler(404)
 def page_not_found(e):
     #e is the error message
