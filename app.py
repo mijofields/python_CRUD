@@ -157,13 +157,16 @@ def editpost(postid):
         flash('Something went wrong with your post. Please keep title to less than 100 characters and body to less than 1000 characters.')
         return redirect('/user/' + session['username'] )
 
-    else:
+    elif request.method == 'GET':
         cur = mysql.connection.cursor()
         cur.execute("SELECT * FROM posts WHERE postid = %s", [postid])
         post = cur.fetchone()
         cur.close()
         return render_template('edit_post.html', post=post)
 
+    else:
+        flash('That was an invalid request')
+        return redirect('/user/' + session['username'] )
 
 @app.route('/user/<username>', methods=['GET', 'POST'])
 @login_required
@@ -207,6 +210,7 @@ def userposts(username):
         cur.execute("SELECT posts.title, posts.body, posts.date, users.firstname, users.lastname FROM posts LEFT JOIN users ON posts.userid = users.userid WHERE users.userid = %s ORDER BY posts.date DESC", [userid['userid']])
         posts = cur.fetchall()
         cur.close()
+        flash('The posts of ' + username)
         return render_template('index.html', posts=posts)
     except:
         flash('The username ' + username + ' does not exist, sorry.')

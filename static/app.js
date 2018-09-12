@@ -7,9 +7,6 @@ $(document).ready(function() {
         $('#loginModal').modal('show');
        
     });
-
-
-
        
     });
     
@@ -34,7 +31,6 @@ $(document).on("click", ".delete", function() {
     event.preventDefault();
     
     let postid = $(this).data('id');
-    console.log(`postid app2:  ${postid}`);
 
     $.ajax({
         url: '/delete/' + postid,
