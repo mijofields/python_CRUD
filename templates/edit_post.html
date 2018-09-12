@@ -14,14 +14,10 @@
   <form role="form" action="/edit/{{post.postid}}" method="POST">
     <div>
   <h3>Title:</h3>
-  <textarea rows="2" cols="50" name="title" maxlength="100" required>
-    {{post.title}} 
-  </textarea>
+  <textarea rows="2" cols="50" name="title" maxlength="100" required>{{post.title}}</textarea>
 
   <h3>Body:</h3>
-  <textarea rows="5" cols="50" name="body" maxlength="1000" required>
-    {{post.body}} 
-  </textarea>
+  <textarea rows="5" cols="50" name="body" maxlength="1000" required>{{post.body}}</textarea>
 </div>
   <button type="submit" class="btn btn-primary mb-2">Submit</button>
 </form>

@@ -9,7 +9,7 @@
 
 
 <div class="container-fluid">
-    <h3 class="text-center">There are some that call me ... {{session['firstname']}}.</h3>
+    <h3 class="text-center">{{session['firstname']}}'s Dashboard:</h3>
     <br><br>
     
 {% with messages = get_flashed_messages() %}
@@ -36,12 +36,12 @@
       </div>
   
       <div>
-        <div class="card-body" id={{post.postid}}body >
+        <div class="card-body border border-warning border-top-0" id={{post.postid}}body >
             {{post.body}}
         <div class="text-danger font-italic">
           {{post.date}}
         </div>
-        <button type="button" class="btn btn-warning edit" data-id={{post.postid}} data-title={{post.title}} data-body={{post.body}}>Edit</button>
+        <button type="button" class="btn btn-warning edit" data-id={{post.postid}}>Edit</button>
         <button type="button" class="btn btn-danger delete" data-id={{post.postid}}>Delete</button>
         </div>
     
@@ -68,7 +68,7 @@
         </div>
     
         <div>
-          <div class="card-body">
+          <div class="card-body border border-warning border-top-0">
               What have the Romans ever done for us?
        
           </div>

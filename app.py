@@ -82,11 +82,11 @@ def register():
         return render_template('register.html')
 
     elif request.method == 'POST' and form.validate():
-        firstname = form.firstname.data
-        lastname = form.lastname.data
-        username = form.username.data
-        email = form.email.data
-        passwordActual = form.passwordActual.data
+        firstname = form.firstname.data.strip()
+        lastname = form.lastname.data.strip()
+        username = form.username.data.strip()
+        email = form.email.data.strip()
+        passwordActual = form.password.data.strip()
         passwordHash = generate_password_hash(passwordActual)
         cur = mysql.connection.cursor()
         cur.execute("INSERT INTO users (firstname, lastname, username, email, passwordActual, passwordHash) VALUES (%s, %s, %s, %s, %s, %s)", [firstname, lastname, username, email, passwordActual, passwordHash])
@@ -144,8 +144,8 @@ def editpost(postid):
     form = ArticleForm(request.form)
 
     if request.method == 'POST' and form.validate():
-        title = form.title.data
-        body = form.body.data
+        title = form.title.data.strip()
+        body = form.body.data.strip()
         cur = mysql.connection.cursor()
         cur.execute("UPDATE posts SET title=%s, body=%s WHERE postid=%s", [title, body, postid])
         mysql.connection.commit()
@@ -182,8 +182,8 @@ def homepage(username):
         return render_template('home.html', posts=posts, count=count)
 
     elif request.method == 'POST' and form.validate():
-        title = form.title.data
-        body = form.body.data
+        title = form.title.data.strip()
+        body = form.body.data.strip()
         cur = mysql.connection.cursor()
         cur.execute("INSERT INTO posts (title, body, userid) VALUES (%s, %s, %s)", [title, body, session['userid']]), 
         mysql.connection.commit()
