@@ -44,8 +44,8 @@ class RegisterForm(Form):
     password = PasswordField('Password', [validators.Length(min=4, max=10)])
 
 class ArticleForm(Form):
-    title = StringField('Title', [validators.Length(min=1, max=100)])
-    body = TextAreaField('Body', [validators.Length(min=30, max=1000)])
+    title = StringField('Title', [validators.Length(max=100)])
+    body = StringField('Body', [validators.Length(max=1000)])
 
 #login required decorator
 def login_required(f):
@@ -82,12 +82,12 @@ def register():
         return render_template('register.html')
 
     elif request.method == 'POST' and form.validate():
-        firstname = form['firstname']
-        lastname = form['lastname']
-        username = form['username']
-        email = form['email']
-        passwordActual = form['password']
-        passwordHash = generate_password_hash(form['password'])
+        firstname = form.firstname.data
+        lastname = form.lastname.data
+        username = form.username.data
+        email = form.email.data
+        passwordActual = form.passwordActual.data
+        passwordHash = generate_password_hash(passwordActual)
         cur = mysql.connection.cursor()
         cur.execute("INSERT INTO users (firstname, lastname, username, email, passwordActual, passwordHash) VALUES (%s, %s, %s, %s, %s, %s)", [firstname, lastname, username, email, passwordActual, passwordHash])
         mysql.connection.commit()
@@ -135,7 +135,7 @@ def delete(postid):
     mysql.connection.commit()
     cur.close()
     flash('You have deleted a post')
-    return render_template('home.html' )
+    return redirect('/user/' + session['username'] )
   
 @app.route('/edit/<postid>', methods=['GET','POST'])
 @login_required
@@ -144,10 +144,10 @@ def editpost(postid):
     form = ArticleForm(request.form)
 
     if request.method == 'POST' and form.validate():
-        newtitle = form['newtitle']
-        newbody = form['newbody']
+        title = form.title.data
+        body = form.body.data
         cur = mysql.connection.cursor()
-        cur.execute("UPDATE posts SET title=%s, body=%s WHERE postid=%s", [newtitle, newbody, postid])
+        cur.execute("UPDATE posts SET title=%s, body=%s WHERE postid=%s", [title, body, postid])
         mysql.connection.commit()
         cur.close()
         flash('You have updated a post')
@@ -161,7 +161,6 @@ def editpost(postid):
         cur = mysql.connection.cursor()
         cur.execute("SELECT * FROM posts WHERE postid = %s", [postid])
         post = cur.fetchone()
-        print(post['title'])
         cur.close()
         return render_template('edit_post.html', post=post)
 
@@ -180,8 +179,8 @@ def homepage(username):
         return render_template('home.html', posts=posts, count=count)
 
     elif request.method == 'POST' and form.validate():
-        title = form['title']
-        body = form['body']
+        title = form.title.data
+        body = form.body.data
         cur = mysql.connection.cursor()
         cur.execute("INSERT INTO posts (title, body, userid) VALUES (%s, %s, %s)", [title, body, session['userid']]), 
         mysql.connection.commit()
@@ -210,7 +209,7 @@ def userposts(username):
         cur.close()
         return render_template('index.html', posts=posts)
     except:
-        flash('This username does not exist, sorry.')
+        flash('The username ' + username + ' does not exist, sorry.')
         return render_template('index.html')
 
 
