@@ -1,25 +1,23 @@
-from flask import Flask, render_template, url_for, redirect, request, session, flash, g, jsonify
+from flask import Flask, render_template, url_for, redirect, session, request, flash
 from flask_mysqldb import MySQL
-from flask_bootstrap import Bootstrap
 from functools import wraps
 import yaml
 import os
 import sys
 from werkzeug.security import generate_password_hash, check_password_hash
-from wtforms import Form, BooleanField, StringField, PasswordField, TextAreaField, validators
+from wtforms import Form, StringField, PasswordField, validators
 
 
 #import flask server
 #render_template is template engine
 #url_for url generator and load static files
-#redirect
+#redirect to redirect requests
+#session to store a session cookie
+#flash to flash messages to the user
+#request to send webbased requests to the server
 
 app = Flask(__name__)
 #instantiate the server
-Bootstrap(app)
-# login = LoginManager(app)
-
-
 
 #configure sqldb
 env = yaml.load(open('db.yaml'))
@@ -110,7 +108,7 @@ def login():
         return redirect(url_for('index'))
 
     else:
-        flash('Incorrect login credentials')
+        flash('Incorrect login credentials, have you registered?')
         return redirect(url_for('index'))
 
 #READ: root & index page, showing all blog posts from all authors 
